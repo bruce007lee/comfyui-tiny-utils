@@ -133,12 +133,12 @@ class FaceAlignMaskProcess:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "mask": ("Mask",),
+                "mask": ("MASK",),
                 "trans_info": ("TRANS_INFO",),
             }
         }
 
-    RETURN_TYPES = ("Mask",)
+    RETURN_TYPES = ("MASK",)
     RETURN_NAMES = ("mask",)
     FUNCTION = "generate"
 
@@ -151,5 +151,5 @@ class FaceAlignMaskProcess:
         output_image = warp_im(im, trans_info[0], trans_info[1])
         output_image = Image.fromarray(cv2.cvtColor(output_image, cv2.COLOR_BGR2RGB))
         
-        output_image = imageUtils.pil2comfy(output_image)
+        output_image = imageUtils.pil2tensor(output_image.convert("L"))
         return (torch.cat([output_image], dim=0),)
