@@ -64,6 +64,7 @@ def warp_im1(im, M_, dshape):
                    flags=cv2.WARP_INVERSE_MAP)
     return output_im
 
+
 class FaceAlign:
     @classmethod
     def INPUT_TYPES(cls):
@@ -74,8 +75,8 @@ class FaceAlign:
             }
         }
 
-    RETURN_TYPES = ("IMAGE",)
-    RETURN_NAMES = ("image",)
+    RETURN_TYPES = ("IMAGE","TRANS_INFO",)
+    RETURN_NAMES = ("image","trans_info",)
     FUNCTION = "generate"
 
     CATEGORY = "TinyUtils"
@@ -84,11 +85,44 @@ class FaceAlign:
         image1 = imageUtils.tensor2pil(image1)
         image2 = imageUtils.tensor2pil(image2)
 
-        im1_landmark = np.mat(get_landmark(image1))
-        im2_landmark = np.mat(get_landmark(image2))
+        im1 = cv2.cvtColor(np.array(image1), cv2.COLOR_RGB2BGR)
+        im2 = cv2.cvtColor(np.array(image2), cv2.COLOR_RGB2BGR)
+
+        im1_landmark = np.mat(get_landmark(im1))
+        im2_landmark = np.mat(get_landmark(im2))
        
         M = transformation_from_points(im1_landmark, im2_landmark)
-        output_image = warp_im(image2, M, image1.shape)
+        output_image = warp_im(im2, M, im1.shape)
+
+        output_image = Image.fromarray(cv2.cvtColor(output_image, cv2.COLOR_BGR2RGB))
+        
+        output_image = imageUtils.pil2comfy(output_image)
+        return (torch.cat([output_image], dim=0),[M, im1.shape],)
+
+
+
+class FaceAlignProcess:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "image": ("IMAGE",),
+                "trans_info": ("TRANS_INFO",),
+            }
+        }
+
+    RETURN_TYPES = ("IMAGE",)
+    RETURN_NAMES = ("image",)
+    FUNCTION = "generate"
+
+    CATEGORY = "TinyUtils"
+
+    def generate(self, image, trans_info):
+        image = imageUtils.tensor2pil(image)
+
+        im = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+        output_image = warp_im(im, trans_info[0], trans_info[1])
+        output_image = Image.fromarray(cv2.cvtColor(output_image, cv2.COLOR_BGR2RGB))
         
         output_image = imageUtils.pil2comfy(output_image)
         return (torch.cat([output_image], dim=0),)
