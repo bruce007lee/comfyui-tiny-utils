@@ -1,5 +1,5 @@
-from .face import Cleaner 
+from .face import FaceAlign 
 
 NODE_CLASS_MAPPINGS = {
-    "cleaner": Cleaner,
+    "FaceAlign": FaceAlign,
 }
