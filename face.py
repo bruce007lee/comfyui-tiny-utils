@@ -1,6 +1,6 @@
 from PIL import Image
 from .modules import devices, logger as loggerUtil, imageUtils
-import platform
+import dlib
 import os
 import cv2
 import numpy as np
@@ -8,6 +8,17 @@ import torch
 
 logger = loggerUtil.logger
 
+predictor_path = './models/shape_predictor_68_face_landmarks.dat'
+detector = dlib.get_frontal_face_detector()
+predictor = dlib.shape_predictor(predictor_path)
+
+def get_landmark(im):
+    rects = detector(im, 1)
+    if len(rects) > 1:
+        raise Exception('TooManyFaces')
+    if len(rects) == 0:
+        raise Exception('NoFaces')
+    return np.matrix([[p.x, p.y] for p in predictor(im, rects[0]).parts()])
 
 def transformation_from_points(points1, points2):
     points1 = points1.astype(np.float64)
@@ -72,8 +83,7 @@ class FaceAlign:
         image = imageUtils.tensor2pil(image)
         mask = imageUtils.tensor2pil(mask)
 
-        output_image = Image.fromarray(output_image)
-
-        output_image = pil2comfy(output_image)
-        del model
+        
+        
+        output_image = imageUtils.pil2comfy(output_image)
         return (torch.cat([output_image], dim=0),)
