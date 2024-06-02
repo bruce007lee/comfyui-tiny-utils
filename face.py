@@ -42,10 +42,10 @@ def transformation_from_points(points1, points2):
                       np.matrix([0., 0., 1.])])
 
 
-def warp_im(im, M_, dshape):
+def warp_im(im, M, dshape):
     output_im = np.zeros(dshape, dtype=im.dtype)
     cv2.warpAffine(im,
-                   M_[:2],
+                   M[:2],
                    (dshape[1], dshape[0]),
                    dst=output_im,
                    borderMode=cv2.BORDER_TRANSPARENT,
@@ -80,10 +80,14 @@ class FaceAlign:
     CATEGORY = "utils"
 
     def generate(self, image1, image2):
-        image = imageUtils.tensor2pil(image)
-        mask = imageUtils.tensor2pil(mask)
+        image1 = imageUtils.tensor2pil(image1)
+        image2 = imageUtils.tensor2pil(image2)
 
-        
+        im1_landmark = np.mat(get_landmark(image1))
+        im2_landmark = np.mat(get_landmark(image2))
+       
+        M = transformation_from_points(im1_landmark, im2_landmark)
+        output_image = warp_im(image1, M, image1.shape)
         
         output_image = imageUtils.pil2comfy(output_image)
         return (torch.cat([output_image], dim=0),)
