@@ -78,7 +78,7 @@ class FaceAlign:
     RETURN_NAMES = ("image",)
     FUNCTION = "generate"
 
-    CATEGORY = "utils"
+    CATEGORY = "TinyUtils"
 
     def generate(self, image1, image2):
         image1 = imageUtils.tensor2pil(image1)
