@@ -1,6 +1,7 @@
-from .face import FaceAlign, FaceAlignProcess
+from .face import FaceAlign, FaceAlignImageProcess, FaceAlignMaskProcess
 
 NODE_CLASS_MAPPINGS = {
     "FaceAlign": FaceAlign,
-    "FaceAlignProcess": FaceAlignProcess,
+    "FaceAlignImageProcess": FaceAlignImageProcess,
+    "FaceAlignMaskProcess": FaceAlignMaskProcess,
 }
