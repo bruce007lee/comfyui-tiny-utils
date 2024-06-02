@@ -6,11 +6,12 @@ import cv2
 import numpy as np
 import torch
 
+BASE_PATH = os.path.split(os.path.realpath(__file__))[0]
 logger = loggerUtil.logger
 
-predictor_path = './models/shape_predictor_68_face_landmarks.dat'
+predictor_path = '/models/shape_predictor_68_face_landmarks.dat'
 detector = dlib.get_frontal_face_detector()
-predictor = dlib.shape_predictor(predictor_path)
+predictor = dlib.shape_predictor(BASE_PATH + predictor_path)
 
 def get_landmark(im):
     rects = detector(im, 1)
