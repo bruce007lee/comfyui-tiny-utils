@@ -1,3 +1,7 @@
+from PIL import Image, ImageOps
+import numpy as np
+import torch
+
 def tensor2pil(image):
     return Image.fromarray(
         np.clip(255.0 * image.cpu().numpy().squeeze(), 0, 255).astype(np.uint8)

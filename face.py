@@ -87,7 +87,7 @@ class FaceAlign:
         im2_landmark = np.mat(get_landmark(image2))
        
         M = transformation_from_points(im1_landmark, im2_landmark)
-        output_image = warp_im(image1, M, image1.shape)
+        output_image = warp_im(image2, M, image1.shape)
         
         output_image = imageUtils.pil2comfy(output_image)
         return (torch.cat([output_image], dim=0),)
