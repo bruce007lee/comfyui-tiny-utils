@@ -1,5 +1,5 @@
 from PIL import Image
-from .modules import devices, logger as loggerUtil, imageUtils
+from .modules import logger as loggerUtil, imageUtils
 import dlib
 import os
 import cv2
