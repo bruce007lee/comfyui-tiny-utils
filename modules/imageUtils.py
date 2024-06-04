@@ -58,3 +58,22 @@ def pil2tensor(image, device=DEVICE) -> torch.Tensor:
     
     out_image = torch.from_numpy(img).unsqueeze(0).to(device)
     return out_image
+
+def fillColorByMask(image: Image, mask: Image, color) -> Image:
+    if mask.mode != 'RGB':
+        mask = mask.convert('RGB')
+ 
+    maskDatas = mask.getdata()
+    datas = image.getdata()
+    new_datas = []
+    index = 0
+    for item in datas:
+        md = maskDatas[index]
+        if md[0] != 0:
+            new_datas.append(color)
+        else:
+            new_datas.append(item)
+        index += 1
+    img = image.copy()
+    img.putdata(new_datas)
+    return img

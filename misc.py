@@ -1,14 +1,18 @@
-from PIL import Image
+from PIL import Image, ImageColor
 from .modules import logger as loggerUtil, imageUtils
 import cv2
 import numpy as np
+import torch
 
-class ImageCleanAlpha:
+
+class ImageFillColorByMask:
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
                 "image": ("IMAGE",),
+                "mask": ("MASK",),
+                "color": ("STRING", {"default": "#ffffff"}),
             }
         }
 
@@ -18,12 +22,12 @@ class ImageCleanAlpha:
 
     CATEGORY = "TinyUtils"
 
-    def generate(self, mask, trans_info):
-        image = imageUtils.tensor2pil(mask)
+    def generate(self, image, mask, color="#ffffff"):
+        image = imageUtils.tensor2pil(image)
+        mask = imageUtils.tensor2pil(mask)
 
-        im = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
-        output_image = warp_im(im, trans_info[0], trans_info[1])
-        output_image = Image.fromarray(cv2.cvtColor(output_image, cv2.COLOR_BGR2RGB))
-        
-        output_image = imageUtils.pil2tensor(output_image.convert("L"))
+        output_image = imageUtils.fillColorByMask(
+            image, mask, ImageColor.getcolor(color, "RGBA")
+        )
+        output_image = imageUtils.pil2comfy(output_image)
         return (torch.cat([output_image], dim=0),)
