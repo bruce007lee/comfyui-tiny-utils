@@ -1,7 +1,9 @@
 from PIL import Image, ImageOps
+from typing import Union, List
 import numpy as np
 import torch
 from comfy.model_management import get_torch_device
+
 DEVICE = get_torch_device()
 
 def tensor2pil(image):
@@ -9,9 +11,22 @@ def tensor2pil(image):
         np.clip(255.0 * image.cpu().numpy().squeeze(), 0, 255).astype(np.uint8)
     )
 
+def tensor2np(tensor: torch.Tensor) -> List[np.ndarray]:
+    if len(tensor.shape) == 3:  # Single image
+        return np.clip(255.0 * tensor.cpu().numpy(), 0, 255).astype(np.uint8)
+    else:  # Batch of images
+        return [np.clip(255.0 * t.cpu().numpy(), 0, 255).astype(np.uint8) for t in tensor]
+
+def tensor_mask2image(mask:torch.Tensor)  -> torch.Tensor:
+    result = mask.reshape((-1, 1, mask.shape[-2], mask.shape[-1])).movedim(1, -1).expand(-1, -1, -1, 3)
+    return result
+
+def tensor_image2mask(image:torch.Tensor) -> torch.Tensor:
+    mask = image[:, :, :, 0]
+    return mask
 
 # Convert to comfy
-def pil2comfy(img):
+def pil2comfy(img) -> torch.Tensor:
     img = ImageOps.exif_transpose(img)
     image = img.convert("RGB")
     image = np.array(image).astype(np.float32) / 255.0
@@ -21,7 +36,7 @@ def pil2comfy(img):
 
 # Convert PIL to Tensor
 # 图片转张量
-def pil2tensor(image, device=DEVICE):
+def pil2tensor(image, device=DEVICE) -> torch.Tensor:
     if isinstance(image, Image.Image):
         img = np.array(image)
     else:

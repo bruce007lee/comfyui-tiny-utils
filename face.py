@@ -9,17 +9,19 @@ import torch
 BASE_PATH = os.path.split(os.path.realpath(__file__))[0]
 logger = loggerUtil.logger
 
-predictor_path = '/models/shape_predictor_68_face_landmarks.dat'
+predictor_path = "/models/shape_predictor_68_face_landmarks.dat"
 detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor(BASE_PATH + predictor_path)
+
 
 def get_landmark(im):
     rects = detector(im, 1)
     if len(rects) > 1:
-        raise Exception('TooManyFaces')
+        raise Exception("TooManyFaces")
     if len(rects) == 0:
-        raise Exception('NoFaces')
+        raise Exception("NoFaces")
     return np.matrix([[p.x, p.y] for p in predictor(im, rects[0]).parts()])
+
 
 def transformation_from_points(points1, points2):
     points1 = points1.astype(np.float64)
@@ -38,30 +40,37 @@ def transformation_from_points(points1, points2):
     U, S, Vt = np.linalg.svd(points1.T * points2)
     R = (U * Vt).T
 
-    return np.vstack([np.hstack(((s2 / s1) * R,
-                                 c2.T - (s2 / s1) * R * c1.T)),
-                      np.matrix([0., 0., 1.])])
+    return np.vstack(
+        [
+            np.hstack(((s2 / s1) * R, c2.T - (s2 / s1) * R * c1.T)),
+            np.matrix([0.0, 0.0, 1.0]),
+        ]
+    )
 
 
 def warp_im(im, M, dshape):
     output_im = np.zeros(dshape, dtype=im.dtype)
-    cv2.warpAffine(im,
-                   M[:2],
-                   (dshape[1], dshape[0]),
-                   dst=output_im,
-                   borderMode=cv2.BORDER_TRANSPARENT,
-                   flags=cv2.WARP_INVERSE_MAP)
+    cv2.warpAffine(
+        im,
+        M[:2],
+        (dshape[1], dshape[0]),
+        dst=output_im,
+        borderMode=cv2.BORDER_TRANSPARENT,
+        flags=cv2.WARP_INVERSE_MAP,
+    )
     return output_im
 
 
 def warp_im1(im, M_, dshape):
     output_im = np.zeros(dshape, dtype=im.dtype)
-    cv2.warpAffine(im,
-                   M_[:2],
-                   (dshape[1], dshape[0]),
-                   dst=output_im,
-                   borderValue=(1, 1, 1),
-                   flags=cv2.WARP_INVERSE_MAP)
+    cv2.warpAffine(
+        im,
+        M_[:2],
+        (dshape[1], dshape[0]),
+        dst=output_im,
+        borderValue=(1, 1, 1),
+        flags=cv2.WARP_INVERSE_MAP,
+    )
     return output_im
 
 
@@ -75,8 +84,14 @@ class FaceAlign:
             }
         }
 
-    RETURN_TYPES = ("IMAGE","TRANS_INFO",)
-    RETURN_NAMES = ("image","trans_info",)
+    RETURN_TYPES = (
+        "IMAGE",
+        "TRANS_INFO",
+    )
+    RETURN_NAMES = (
+        "image",
+        "trans_info",
+    )
     FUNCTION = "generate"
 
     CATEGORY = "TinyUtils"
@@ -90,15 +105,17 @@ class FaceAlign:
 
         im1_landmark = np.mat(get_landmark(im1))
         im2_landmark = np.mat(get_landmark(im2))
-       
+
         M = transformation_from_points(im1_landmark, im2_landmark)
         output_image = warp_im(im2, M, im1.shape)
 
         output_image = Image.fromarray(cv2.cvtColor(output_image, cv2.COLOR_BGR2RGB))
-        
-        output_image = imageUtils.pil2comfy(output_image)
-        return (torch.cat([output_image], dim=0),[M, im1.shape],)
 
+        output_image = imageUtils.pil2comfy(output_image)
+        return (
+            torch.cat([output_image], dim=0),
+            [M, im1.shape],
+        )
 
 
 class FaceAlignImageProcess:
@@ -123,7 +140,7 @@ class FaceAlignImageProcess:
         im = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
         output_image = warp_im(im, trans_info[0], trans_info[1])
         output_image = Image.fromarray(cv2.cvtColor(output_image, cv2.COLOR_BGR2RGB))
-        
+
         output_image = imageUtils.pil2comfy(output_image)
         return (torch.cat([output_image], dim=0),)
 
@@ -148,8 +165,11 @@ class FaceAlignMaskProcess:
         image = imageUtils.tensor2pil(mask)
 
         im = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
-        output_image = warp_im(im, trans_info[0], trans_info[1])
-        output_image = Image.fromarray(cv2.cvtColor(output_image, cv2.COLOR_BGR2RGB))
-        
-        output_image = imageUtils.pil2tensor(output_image.convert("L"))
-        return (torch.cat([output_image], dim=0),)
+        image = warp_im(im, trans_info[0], trans_info[1])
+        image = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+
+        image = imageUtils.pil2tensor(image.convert("L"))
+        image = torch.cat([image], dim=0)
+        image = imageUtils.tensor_mask2image(image)
+        mask = imageUtils.tensor_image2mask(image)
+        return (mask,)
