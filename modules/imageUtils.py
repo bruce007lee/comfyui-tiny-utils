@@ -95,7 +95,7 @@ def cropImageByMask(image: Image, mask: Image, color="#ffffff") -> Image:
     if mask.mode != "RGB":
         mask = mask.convert("RGB")
 
-    if image.shape[0] != mask.shape[0] or image.shape[1] != mask.shape[1]:
+    if image.size[0] != mask.size[0] or image.size[1] != mask.size[1]:
         raise Exception("Image size not match mask size")
 
     color = ImageColor.getcolor(color, "RGBA")
