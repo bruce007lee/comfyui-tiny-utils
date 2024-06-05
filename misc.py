@@ -38,7 +38,7 @@ class CropImageByMask:
             "required": {
                 "image": ("IMAGE",),
                 "mask": ("MASK",),
-                "color": ("STRING", {"default": "#ffffff"}),
+                "color": ("STRING", {"default": "rgba(0, 0, 0, 0)"}),
             }
         }
 
@@ -48,7 +48,7 @@ class CropImageByMask:
 
     CATEGORY = "TinyUtils"
 
-    def generate(self, image, mask, color="#ffffff"):
+    def generate(self, image, mask, color="rgba(0, 0, 0, 0)"):
         image = imageUtils.tensor2pil(image)
         mask = imageUtils.tensor2pil(mask)
 

@@ -91,7 +91,9 @@ def fillColorByMask(image: Image, mask: Image, color) -> Image:
     return img
 
 
-def cropImageByMask(image: Image, mask: Image, color="#ffffff") -> Image:
+def cropImageByMask(image: Image, mask: Image, color="rgba(0, 0, 0, 0)") -> Image:
+    if image.mode != "RGBA":
+        image = image.convert("RGBA")
     if mask.mode != "RGB":
         mask = mask.convert("RGB")
 
