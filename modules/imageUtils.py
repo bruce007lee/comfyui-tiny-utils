@@ -37,9 +37,9 @@ def tensor_image2mask(image: torch.Tensor) -> torch.Tensor:
 
 
 # Convert to comfy
-def pil2comfy(img) -> torch.Tensor:
+def pil2comfy(img, mode="RGB") -> torch.Tensor:
     img = ImageOps.exif_transpose(img)
-    image = img.convert("RGB")
+    image = img.convert(mode)
     image = np.array(image).astype(np.float32) / 255.0
     image = torch.from_numpy(image)[None,]
     return image
@@ -91,7 +91,7 @@ def fillColorByMask(image: Image, mask: Image, color) -> Image:
     return img
 
 
-def cropImageByMask(image: Image, mask: Image, color="rgba(0, 0, 0, 0)") -> Image:
+def cropImageByMask(image: Image, mask: Image, color="#ffffff") -> Image:
     if image.mode != "RGBA":
         image = image.convert("RGBA")
     if mask.mode != "RGB":
