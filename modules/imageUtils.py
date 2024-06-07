@@ -6,7 +6,6 @@ from comfy.model_management import get_torch_device
 
 DEVICE = get_torch_device()
 
-
 def tensor2pil(image):
     return Image.fromarray(
         np.clip(255.0 * image.cpu().numpy().squeeze(), 0, 255).astype(np.uint8)
@@ -22,17 +21,20 @@ def tensor2np(tensor: torch.Tensor) -> List[np.ndarray]:
         ]
 
 
-def tensor_mask2image(mask: torch.Tensor) -> torch.Tensor:
-    result = (
+def tensor_mask2image(mask: torch.Tensor, device=DEVICE) -> torch.Tensor:
+    image = (
         mask.reshape((-1, 1, mask.shape[-2], mask.shape[-1]))
         .movedim(1, -1)
         .expand(-1, -1, -1, 3)
     )
+    image = image.to(device)
+    result = image
     return result
 
 
-def tensor_image2mask(image: torch.Tensor) -> torch.Tensor:
+def tensor_image2mask(image: torch.Tensor, device=DEVICE) -> torch.Tensor:
     mask = image[:, :, :, 0]
+    mask = mask.to(device)
     return mask
 
 

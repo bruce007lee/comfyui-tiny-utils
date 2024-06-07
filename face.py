@@ -171,5 +171,5 @@ class FaceAlignMaskProcess:
         image = imageUtils.pil2tensor(image.convert("L"))
         image = torch.cat([image], dim=0)
         image = imageUtils.tensor_mask2image(image)
-        mask = imageUtils.tensor_image2mask(image)
+        mask = imageUtils.tensor_image2mask(image, 'cpu')
         return (mask,)
