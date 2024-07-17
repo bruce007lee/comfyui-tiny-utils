@@ -1,5 +1,5 @@
 from .face import FaceAlign, FaceAlignImageProcess, FaceAlignMaskProcess
-from .misc import ImageFillColorByMask, CropImageByMask
+from .image import ImageFillColorByMask, CropImageByMask
 
 NODE_CLASS_MAPPINGS = {
     "FaceAlign": FaceAlign,
