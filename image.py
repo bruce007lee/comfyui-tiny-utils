@@ -227,7 +227,9 @@ class ImageTransposeAdvance:
 
         # Apply transformations to the element image
         image_element = image_element.resize(size)
-        image_element = image_element.rotate(rotate, expand=True)
+        image_element = image_element.rotate(
+            rotate, expand=True, resample=Image.Resampling.BICUBIC
+        )
 
         # Create a mask for the image with the faded border
         if feathering > 0:
