@@ -6,10 +6,16 @@ from comfy.model_management import get_torch_device
 
 DEVICE = get_torch_device()
 
+# Tensor to PIL
 def tensor2pil(image):
     return Image.fromarray(
         np.clip(255.0 * image.cpu().numpy().squeeze(), 0, 255).astype(np.uint8)
     )
+
+
+# PIL to Tensor
+def pil2tensor(image):
+    return torch.from_numpy(np.array(image).astype(np.float32) / 255.0).unsqueeze(0)
 
 
 def tensor2np(tensor: torch.Tensor) -> List[np.ndarray]:
@@ -49,7 +55,7 @@ def pil2comfy(img, mode="RGB") -> torch.Tensor:
 
 # Convert PIL to Tensor
 # 图片转张量
-def pil2tensor(image, device=DEVICE) -> torch.Tensor:
+def pil2tensor_complex(image, device=DEVICE) -> torch.Tensor:
     if isinstance(image, Image.Image):
         img = np.array(image)
     else:

@@ -168,7 +168,7 @@ class FaceAlignMaskProcess:
         image = warp_im(im, trans_info[0], trans_info[1])
         image = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
 
-        image = imageUtils.pil2tensor(image.convert("L"))
+        image = imageUtils.pil2tensor_complex(image.convert("L"))
         image = torch.cat([image], dim=0)
         image = imageUtils.tensor_mask2image(image)
         mask = imageUtils.tensor_image2mask(image, 'cpu')

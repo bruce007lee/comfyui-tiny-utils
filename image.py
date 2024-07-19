@@ -1,6 +1,5 @@
-from PIL import Image, ImageColor
 from .modules import logger as loggerUtil, imageUtils
-from PIL import Image, ImageOps, ImageSequence
+from PIL import Image, ImageOps, ImageSequence, ImageDraw
 import cv2
 import numpy as np
 import torch
@@ -146,3 +145,55 @@ class LoadImageAdvance:
             return "Invalid image file: {}".format(image)
 
         return True
+
+
+class ImageTransposeAdvance:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "image": ("IMAGE",),
+                "image_overlay": ("IMAGE",),
+                "width": ("INT", {"default": 512, "min": -48000, "max": 48000, "step": 1}),
+                "height": ("INT", {"default": 512, "min": -48000, "max": 48000, "step": 1}),
+                "X": ("INT", {"default": 0, "min": -48000, "max": 48000, "step": 1}),
+                "Y": ("INT", {"default": 0, "min": -48000, "max": 48000, "step": 1}),
+                "rotation": ("FLOAT", {"default": 0, "min": -360, "max": 360, "step": 0.01}),
+                "feathering": ("INT", {"default": 0, "min": 0, "max": 4096, "step": 1}),
+            },
+        }
+
+    RETURN_TYPES = ("IMAGE",)
+    FUNCTION = "image_transpose"
+
+    CATEGORY = "TinyUtils"
+
+    def image_transpose(self, image: torch.Tensor, image_overlay: torch.Tensor, width: int, height: int, X: int, Y: int, rotation: int, feathering: int = 0):
+        return (imageUtils.pil2tensor(self.apply_transpose_image(imageUtils.tensor2pil(image), imageUtils.tensor2pil(image_overlay), (width, height), (X, Y), rotation, feathering)), )
+
+    def apply_transpose_image(self, image_bg: Image, image_element: Image, size, loc, rotate=0, feathering=0):
+ 
+        # Apply transformations to the element image
+        image_element = image_element.resize(size)
+        image_element = image_element.rotate(rotate, expand=True)
+
+        # Create a mask for the image with the faded border
+        if feathering > 0:
+            mask = Image.new('L', image_element.size, 255)  # Initialize with 255 instead of 0
+            draw = ImageDraw.Draw(mask)
+            for i in range(feathering):
+                alpha_value = int(255 * (i + 1) / feathering)  # Invert the calculation for alpha value
+                draw.rectangle((i, i, image_element.size[0] - i, image_element.size[1] - i), fill=alpha_value)
+            alpha_mask = Image.merge('RGBA', (mask, mask, mask, mask))
+            image_element = Image.composite(image_element, Image.new('RGBA', image_element.size, (0, 0, 0, 0)), alpha_mask)
+
+        # Create a new image of the same size as the base image with an alpha channel
+        new_image = Image.new('RGBA', image_bg.size, (0, 0, 0, 0))
+        new_image.paste(image_element, loc)
+
+        # Paste the new image onto the base image
+        image_bg = image_bg.convert('RGBA')
+        image_bg.paste(new_image, (0, 0), new_image)
+
+        return image_bg
+
