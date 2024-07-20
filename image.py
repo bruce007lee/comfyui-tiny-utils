@@ -203,21 +203,29 @@ class ImageTransposeAdvance:
         )
 
     def calculate_differ(
-        self, oriSize: tuple[int, int], newSize: tuple[int, int], rotate: int
+        self,
+        pos: tuple[int, int],
+        oriSize: tuple[int, int],
+        newSize: tuple[int, int],
+        rotate: int,
     ) -> tuple[int, int]:
         w = oriSize[0]
         h = oriSize[1]
 
         p = miscUtils.rotatePoint(
-            (0, 0), (math.floor(w / 2), -math.floor(h / 2)), rotate
+            pos, (math.floor(pos[0] + w / 2), math.floor(pos[1] + h / 2)), rotate
         )
 
-        x = p[0] - math.floor(newSize[0] / 2)
-        y = p[1] + math.floor(newSize[1] / 2)
+        x = 0
+        y = math.floor(newSize[1] / 2) + pos[1] - p[1]
 
-        if rotate < 0 or rotate > 90:
-            x = math.floor(newSize[0] / 2) - p[0]
-            y = p[1] + math.floor(newSize[1] / 2)
+        if rotate > 0:
+            x = math.floor(newSize[0] / 2) + pos[0] - p[0]
+            y = 0
+
+        if rotate > 90 or rotate < -90:
+            x = math.floor(newSize[0] / 2) + pos[0] - p[0]
+            y = math.floor(newSize[1] / 2) + pos[1] - p[1]
 
         return (x, y)
 
@@ -228,30 +236,30 @@ class ImageTransposeAdvance:
         # Apply transformations to the element image
         image_element = image_element.resize(size)
         image_element = image_element.rotate(
-            rotate, expand=True, resample=Image.Resampling.BICUBIC
+            -rotate, expand=True, resample=Image.Resampling.BICUBIC
         )
+
+        imgSize = image_element.size
 
         # Create a mask for the image with the faded border
         if feathering > 0:
-            mask = Image.new(
-                "L", image_element.size, 255
-            )  # Initialize with 255 instead of 0
+            mask = Image.new("L", imgSize, 255)  # Initialize with 255 instead of 0
             draw = ImageDraw.Draw(mask)
             for i in range(feathering):
                 alpha_value = int(
                     255 * (i + 1) / feathering
                 )  # Invert the calculation for alpha value
                 draw.rectangle(
-                    (i, i, image_element.size[0] - i, image_element.size[1] - i),
+                    (i, i, imgSize[0] - i, imgSize[1] - i),
                     fill=alpha_value,
                 )
             alpha_mask = Image.merge("RGBA", (mask, mask, mask, mask))
             image_element = Image.composite(
                 image_element,
-                Image.new("RGBA", image_element.size, (0, 0, 0, 0)),
+                Image.new("RGBA", imgSize, (0, 0, 0, 0)),
                 alpha_mask,
             )
-        differ = self.calculate_differ(size, image_element.size, rotate)
+        differ = self.calculate_differ(loc, size, imgSize, rotate)
         loc = (loc[0] - differ[0], loc[1] - differ[1])
 
         # Create a new image of the same size as the base image with an alpha channel
