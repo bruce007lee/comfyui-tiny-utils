@@ -10,17 +10,28 @@ BASE_PATH = os.path.split(os.path.realpath(__file__))[0]
 logger = loggerUtil.logger
 
 predictor_path = "/models/shape_predictor_68_face_landmarks.dat"
-detector = dlib.get_frontal_face_detector()
-predictor = dlib.shape_predictor(BASE_PATH + predictor_path)
+detector = None
+predictor = None
+
+def getDetector():
+    if detector is None:
+        detector = dlib.get_frontal_face_detector()
+    return detector
+
+
+def getPredictor():
+    if predictor is None:
+        predictor = dlib.shape_predictor(BASE_PATH + predictor_path)
+    return predictor
 
 
 def get_landmark(im):
-    rects = detector(im, 1)
+    rects = getDetector()(im, 1)
     if len(rects) > 1:
         raise Exception("TooManyFaces")
     if len(rects) == 0:
         raise Exception("NoFaces")
-    return np.matrix([[p.x, p.y] for p in predictor(im, rects[0]).parts()])
+    return np.matrix([[p.x, p.y] for p in getPredictor()(im, rects[0]).parts()])
 
 
 def transformation_from_points(points1, points2):
@@ -171,5 +182,5 @@ class FaceAlignMaskProcess:
         image = imageUtils.pil2tensor_complex(image.convert("L"))
         image = torch.cat([image], dim=0)
         image = imageUtils.tensor_mask2image(image)
-        mask = imageUtils.tensor_image2mask(image, 'cpu')
+        mask = imageUtils.tensor_image2mask(image, "cpu")
         return (mask,)
