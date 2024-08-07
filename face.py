@@ -14,12 +14,14 @@ detector = None
 predictor = None
 
 def getDetector():
+    global detector
     if detector is None:
         detector = dlib.get_frontal_face_detector()
     return detector
 
 
 def getPredictor():
+    global predictor
     if predictor is None:
         predictor = dlib.shape_predictor(BASE_PATH + predictor_path)
     return predictor
