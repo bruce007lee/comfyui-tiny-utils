@@ -18,6 +18,7 @@ class ImageFillColorByMask:
                 "image": ("IMAGE",),
                 "mask": ("MASK",),
                 "color": ("STRING", {"default": "#ffffff"}),
+                "mode": (["RGB", "RGBA"], {"default": "RGB"}),
             }
         }
 
@@ -27,11 +28,11 @@ class ImageFillColorByMask:
 
     CATEGORY = "TinyUtils"
 
-    def generate(self, image, mask, color="#ffffff"):
+    def generate(self, image, mask, color="#ffffff", mode="RGB"):
         image = imageUtils.tensor2pil(image)
         mask = imageUtils.tensor2pil(mask)
 
-        output_image = imageUtils.fillColorByMask(image, mask, color)
+        output_image = imageUtils.fillColorByMask(image, mask, color, mode)
         output_image = imageUtils.pil2comfy(output_image)
         return (torch.cat([output_image], dim=0),)
 
@@ -58,7 +59,7 @@ class CropImageByMask:
         image = imageUtils.tensor2pil(image)
         mask = imageUtils.tensor2pil(mask)
 
-        output_image = imageUtils.cropImageByMask(image, mask, color)
+        output_image = imageUtils.cropImageByMask(image, mask, color, mode)
         output_image = imageUtils.pil2comfy(output_image, mode)
         return (torch.cat([output_image], dim=0),)
 

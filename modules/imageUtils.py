@@ -6,6 +6,7 @@ from comfy.model_management import get_torch_device
 
 DEVICE = get_torch_device()
 
+
 # Tensor to PIL
 def tensor2pil(image):
     return Image.fromarray(
@@ -79,10 +80,12 @@ def pil2tensor_complex(image, device=DEVICE) -> torch.Tensor:
     return out_image
 
 
-def fillColorByMask(image: Image, mask: Image, color) -> Image:
+def fillColorByMask(image: Image, mask: Image, color="#ffffff", mode="RGB") -> Image:
+    if image.mode != mode:
+        image = image.convert(mode)
     if mask.mode != "RGB":
         mask = mask.convert("RGB")
-    color = ImageColor.getcolor(color, "RGBA")
+    color = ImageColor.getcolor(color, mode)
     maskDatas = mask.getdata()
     datas = image.getdata()
     new_datas = []
@@ -99,16 +102,16 @@ def fillColorByMask(image: Image, mask: Image, color) -> Image:
     return img
 
 
-def cropImageByMask(image: Image, mask: Image, color="#ffffff") -> Image:
-    if image.mode != "RGBA":
-        image = image.convert("RGBA")
+def cropImageByMask(image: Image, mask: Image, color="#ffffff", mode="RGB") -> Image:
+    if image.mode != mode:
+        image = image.convert(mode)
     if mask.mode != "RGB":
         mask = mask.convert("RGB")
 
     if image.size[0] != mask.size[0] or image.size[1] != mask.size[1]:
         raise Exception("Image size not match mask size")
 
-    color = ImageColor.getcolor(color, "RGBA")
+    color = ImageColor.getcolor(color, mode)
     maskDatas = mask.getdata()
     datas = image.getdata()
     new_datas = []
