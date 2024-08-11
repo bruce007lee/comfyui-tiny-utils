@@ -33,7 +33,7 @@ class ImageFillColorByMask:
         mask = imageUtils.tensor2pil(mask)
 
         output_image = imageUtils.fillColorByMask(image, mask, color, mode)
-        output_image = imageUtils.pil2comfy(output_image)
+        output_image = imageUtils.pil2comfy(output_image, mode)
         return (torch.cat([output_image], dim=0),)
 
 
