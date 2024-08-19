@@ -317,10 +317,10 @@ def run_sam(
         # sam_dict["sam_masks"] = sam_masks
 
     except Exception as e:
-        print(e)
+        # print(e)
         # print(traceback.format_exc())
         # ia_logging.error(str(e))
         # ret_sam_image = None if sam_image is None else gr.update()
-        raise Exception("Segment Anything failed")
+        raise e
 
     return Image.fromarray(seg_image)
