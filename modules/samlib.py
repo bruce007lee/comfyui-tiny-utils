@@ -299,7 +299,16 @@ def run_sam(
     # ia_logging.info(f"input_image: {input_image.shape} {input_image.dtype}")
 
     try:
-        sam_masks = generate_sam_masks(input_image, sam_model_id, False)
+        sam_masks = generate_sam_masks(
+            input_image,
+            sam_model_id,
+            points_per_side,
+            pred_iou_thresh,
+            stability_score_thresh,
+            crop_n_layers,
+            crop_n_points_downscale_factor,
+            min_mask_region_area,
+        )
         sam_masks = sort_masks_by_area(sam_masks)
         sam_masks = insert_mask_to_sam_masks(sam_masks, sam_dict["pad_mask"])
 
