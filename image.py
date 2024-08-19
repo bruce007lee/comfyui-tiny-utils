@@ -1,4 +1,4 @@
-from .modules import logger as loggerUtil, imageUtils, miscUtils
+from .modules import logger as loggerUtil, imageUtils, miscUtils, samlib
 from PIL import Image, ImageOps, ImageSequence, ImageDraw
 import cv2
 import numpy as np
@@ -272,3 +272,79 @@ class ImageTransposeAdvance:
         image_bg.paste(new_image, (0, 0), new_image)
 
         return image_bg
+
+
+class ImageSAMMask:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "image": ("IMAGE",),
+                "model": (
+                    [
+                        "sam_hq_vit_b.pth",
+                        "sam_hq_vit_h.pth",
+                        "sam_hq_vit_l.pth",
+                        "sam_vit_b_01ec64.pth",
+                        "sam_vit_h_4b8939.pth",
+                        "sam_vit_l_0b3195.pth",
+                    ],
+                    {"default": "sam_hq_vit_h.pth"},
+                ),
+                "points_per_side": (
+                    "INT",
+                    {"default": 32, "min": 0, "max": 1000000, "step": 1},
+                ),
+                "pred_iou_thresh": (
+                    "FLOAT",
+                    {"default": 0.86, "min": 0, "max": 1, "step": 0.01},
+                ),
+                "stability_score_thresh": (
+                    "FLOAT",
+                    {"default": 0.92, "min": 0, "max": 1, "step": 0.01},
+                ),
+                "crop_n_layers": (
+                    "INT",
+                    {"default": 0, "min": 0, "max": 100, "step": 1},
+                ),
+                "crop_n_points_downscale_factor": (
+                    "INT",
+                    {"default": 1, "min": 0, "max": 100, "step": 1},
+                ),
+                "min_mask_region_area": (
+                    "INT",
+                    {"default": 0, "min": 0, "max": 100, "step": 1},
+                ),
+            }
+        }
+
+    RETURN_TYPES = ("IMAGE",)
+    RETURN_NAMES = ("image",)
+    FUNCTION = "generate"
+
+    CATEGORY = "TinyUtils"
+
+    def generate(
+        self,
+        image,
+        model,
+        points_per_side,
+        pred_iou_thresh,
+        stability_score_thresh,
+        crop_n_layers,
+        crop_n_points_downscale_factor,
+        min_mask_region_area,
+    ):
+        image = imageUtils.tensor2pil(image)
+        output_image = samlib.run_sam(
+            image,
+            model,
+            points_per_side,
+            pred_iou_thresh,
+            stability_score_thresh,
+            crop_n_layers,
+            crop_n_points_downscale_factor,
+            min_mask_region_area,
+        )
+        output_image = imageUtils.pil2comfy(output_image)
+        return (torch.cat([output_image], dim=0),)
