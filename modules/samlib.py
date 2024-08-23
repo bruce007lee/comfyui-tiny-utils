@@ -16,8 +16,6 @@ inpa_basedir = os.path.join(
 
 models_dir = os.path.normpath(inpa_basedir)
 
-print("[DEBUG]models_dir:", models_dir)
-
 from .ia_get_dataset_colormap import create_pascal_label_colormap  # noqa: E402
 from .ia_sam_manager import get_sam_mask_generator  # noqa: E402
 
